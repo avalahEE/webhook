@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ava_webhook_payload_tree" model="ir.ui.view">
+        <field name="name">ava.webhook.payload.tree</field>
+        <field name="model">ava.webhook.payload</field>
+        <field name="arch" type="xml">
+            <list string="Webhook Payloads">
+                <field name="create_date"/>
+                <field name="route_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ava_webhook_payload_search" model="ir.ui.view">
+        <field name="name">ava.webhook.payload.search</field>
+        <field name="model">ava.webhook.payload</field>
+        <field name="arch" type="xml">
+            <search string="Search Webhook Payloads">
+                <field name="route_id"/>
+                <field name="create_date"/>
+                <group>
+                    <filter string="Route" name="group_by_route" domain="[]" context="{'group_by': 'route_id'}"/>
+                    <filter string="Creation Date" name="group_by_create_date" domain="[]" context="{'group_by': 'create_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_ava_webhook_payload_form" model="ir.ui.view">
+        <field name="name">ava.webhook.payload.form</field>
+        <field name="model">ava.webhook.payload</field>
+        <field name="arch" type="xml">
+            <form string="Webhook Payload">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="route_id" readonly="1"/>
+                            <field name="create_date" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Payload Data">
+                            <field name="data_display" widget="code" options="{'mode': 'javascript'}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ava_webhook_payload" model="ir.actions.act_window">
+        <field name="name">Payloads</field>
+        <field name="res_model">ava.webhook.payload</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_ava_webhook_payload"
+              name="Payloads"
+              action="action_ava_webhook_payload"
+              parent="ava_webhook.menu_ava_webhook_root"
+              sequence="20"/>
+</odoo>

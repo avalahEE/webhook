@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ava_webhook_route_list" model="ir.ui.view">
+        <field name="name">ava.webhook.route.list</field>
+        <field name="model">ava.webhook.route</field>
+        <field name="arch" type="xml">
+            <list string="Webhook Routes">
+                <field name="route"/>
+                <field name="model"/>
+                <field name="active"/>
+                <field name="store"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ava_webhook_route_form" model="ir.ui.view">
+        <field name="name">ava.webhook.route.form</field>
+        <field name="model">ava.webhook.route</field>
+        <field name="arch" type="xml">
+            <form string="Webhook Route">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="route"/>
+                            <field name="url_preview" widget="CopyClipboardChar"/>
+                            <field name="model"/>
+                            <field name="execution_user_id"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group>
+                            <field name="method_transform" widget="dynamic-selection" invisible="not id"/>
+                            <field name="method_process" widget="dynamic-selection" invisible="not id"/>
+                            <field name="store" invisible="not model"/>
+                        </group>
+                        <group>
+                            <field name="transform" widget="code" options="{'mode': 'python'}" invisible="method_transform or not id"/>
+                        </group>
+                        <group>
+                            <field name="process" widget="code" options="{'mode': 'python'}" invisible="method_process or not id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Keys">
+                            <field name="key_ids">
+                                <list editable="bottom">
+                                    <field name="key"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="IP Allowlists">
+                            <group>
+                                <field name="ip_allowlist_ids" widget="many2many_tags"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ava_webhook_route" model="ir.actions.act_window">
+        <field name="name">Webhook Routes</field>
+        <field name="res_model">ava.webhook.route</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_ava_webhook_root"
+        name="Webhooks"
+        groups="ava_webhook.group_webhook_admin"
+        web_icon="ava_webhook,static/description/icon-raised.png" />
+
+    <menuitem id="menu_ava_webhook_route"
+        name="Routes"
+        parent="menu_ava_webhook_root"
+        action="action_ava_webhook_route"
+        groups="ava_webhook.group_webhook_admin"
+        sequence="10"/>
+</odoo>
