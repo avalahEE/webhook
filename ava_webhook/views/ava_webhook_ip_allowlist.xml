@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_ava_webhook_ip_allowlist_list" model="ir.ui.view">
+        <field name="name">ava.webhook.ip.allowlist.list</field>
+        <field name="model">ava.webhook.ip.allowlist</field>
+        <field name="arch" type="xml">
+            <list string="Webhook IP Allowlists">
+                <field name="name"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ava_webhook_ip_allowlist_form" model="ir.ui.view">
+        <field name="name">ava.webhook.ip.allowlist.form</field>
+        <field name="model">ava.webhook.ip.allowlist</field>
+        <field name="arch" type="xml">
+            <form string="Webhook IP Allowlist">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="active" widget="boolean_toggle"/>
+                    </group>
+                    <notebook>
+                        <page string="IP Ranges">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="ip_range"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ava_webhook_ip_allowlist" model="ir.actions.act_window">
+        <field name="name">IP Allowlists</field>
+        <field name="res_model">ava.webhook.ip.allowlist</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_ava_webhook_ip_allowlist"
+        name="IP Allowlists"
+        parent="ava_webhook.menu_ava_webhook_root"
+        action="action_ava_webhook_ip_allowlist"
+        groups="ava_webhook.group_webhook_admin"
+        sequence="15"/>
+</odoo>
