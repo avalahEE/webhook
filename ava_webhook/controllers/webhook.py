@@ -23,7 +23,7 @@ class AvaWebhookController(http.Controller):
             return forwarded_for.split(',', 1)[0].strip()
         return httprequest.remote_addr
 
-    @http.route(f'{_endpoint}/<string:route>/<string:key>', type=JSON_CONTROLLER_TYPE, auth='public', csrf=False)
+    @http.route(f'{_endpoint}/<string:route>/<string:key>', type=JSON_CONTROLLER_TYPE, auth='public', csrf=False, methods=['POST'])
     def hook(self, route, key):
         assert request.env
         record = request.env['ava.webhook.route'].sudo().search([

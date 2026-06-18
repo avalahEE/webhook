@@ -22,13 +22,17 @@ Restrict this to users who are your Odoo admins.
 
 Things to consider:
 - If an execution user is not defined for a route, the route will execute with `sudo()` privileges.
-- Configure IP allowlists to restrict access to specific IP ranges.
+- Configure IP allowlists to restrict access to specific IP ranges if possible.
+- If the `proxy_mode` Odoo config option is enabled ensure that your reverse proxy strips or explicitly sets the `X-Forwarded-For` header.
 - Prefer python methods to customizations done in the web-editor.
+- This module does not provide rate or body size limiting - apply this at the edge instead.
 
 
 Changelog
 ---------
 
+- 1.4.1
+  - Fix: fail closed when deactivating or removing IP allowlists
 - 1.4.0
   - Add IP allowlists support
   - When proxy mode is enabled, use `X-Forwarded-For` header for request IP detection
