@@ -120,18 +120,35 @@ class AvaWebhookRoute(models.Model):
     )
 
     key_ids = fields.One2many('ava.webhook.key', 'route_id', string='Keys')
+    allow_all = fields.Boolean(
+        string='Allow All IPs', default=True, tracking=True,
+        help=(
+            'If enabled, webhook requests for this route are accepted from any IP. '
+            'This option is ignored while IP allowlists are attached.'
+        ),
+    )
     ip_allowlist_ids = fields.Many2many(
         'ava.webhook.ip.allowlist', 'ava_webhook_route_ip_allowlist_rel',
-        'route_id', 'allowlist_id', string='IP Allowlists',
+        'route_id', 'allowlist_id', string='IP Allowlists', context={'active_test': False},
         help='If set, webhook requests for this route are accepted only from IPs matching at least one active allowlist.',
     )
 
+    def _get_ip_allowlists(self):
+        self.ensure_one()
+        return self.with_context(active_test=False).ip_allowlist_ids
+
     def is_ip_allowed(self, ip_address):
         self.ensure_one()
-        active_allowlists = self.ip_allowlist_ids.filtered('active')
-        if not active_allowlists:
+        allowlists = self._get_ip_allowlists()
+        if self.allow_all and not allowlists:
             return True
+        active_allowlists = allowlists.filtered('active')
         return any(allowlist.allows_ip(ip_address) for allowlist in active_allowlists)
+
+    @api.onchange('ip_allowlist_ids')
+    def _onchange_ip_allowlist_ids(self):
+        if self._get_ip_allowlists():
+            self.allow_all = False
 
     @api.model
     def _list_all_models(self):
