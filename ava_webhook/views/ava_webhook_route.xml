@@ -8,6 +8,7 @@
                 <field name="route"/>
                 <field name="model"/>
                 <field name="active"/>
+                <field name="allow_all"/>
                 <field name="store"/>
             </list>
         </field>
@@ -49,6 +50,7 @@
                         </page>
                         <page string="IP Allowlists">
                             <group>
+                                <field name="allow_all" widget="boolean_toggle" readonly="ip_allowlist_ids and not allow_all"/>
                                 <field name="ip_allowlist_ids" widget="many2many_tags"/>
                             </group>
                         </page>

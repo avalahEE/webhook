@@ -24,6 +24,13 @@ class TestAvaWebhookRoute(common.TransactionCase):
             """
         })
 
+    def _create_allowlist(self, active=True):
+        return self.env['ava.webhook.ip.allowlist'].create({
+            'name': 'Office',
+            'active': active,
+            'line_ids': [(0, 0, {'ip_range': '203.0.113.0/24'})],
+        })
+
     def test_list_methods(self):
         """Test that list_methods returns appropriate model methods"""
         methods = self.route.with_context(resId=self.route.id).list_methods()
@@ -89,18 +96,58 @@ class TestAvaWebhookRoute(common.TransactionCase):
         self.assertFalse(record)
         self.assertEqual(route.sudo()._execute_transform({}, {}), {'uid': user.id})
 
-    def test_route_without_allowlists_allows_any_ip(self):
+    def test_route_allow_all_allows_any_ip(self):
+        self.assertTrue(self.route.allow_all)
         self.assertTrue(self.route.is_ip_allowed('203.0.113.10'))
 
+    def test_route_without_allow_all_and_without_allowlists_denies_any_ip(self):
+        self.route.allow_all = False
+
+        self.assertFalse(self.route.is_ip_allowed('203.0.113.10'))
+
     def test_route_allows_ip_from_allowlist(self):
-        allowlist = self.env['ava.webhook.ip.allowlist'].create({
-            'name': 'Office',
-            'line_ids': [(0, 0, {'ip_range': '203.0.113.0/24'})],
-        })
+        allowlist = self._create_allowlist()
         self.route.ip_allowlist_ids = [(6, 0, allowlist.ids)]
 
         self.assertTrue(self.route.is_ip_allowed('203.0.113.10'))
         self.assertFalse(self.route.is_ip_allowed('198.51.100.10'))
+
+    def test_route_with_only_inactive_allowlists_denies_any_ip(self):
+        allowlist = self._create_allowlist(active=False)
+        self.route.write({'ip_allowlist_ids': [(6, 0, allowlist.ids)]})
+
+        self.assertEqual(self.route.with_context(active_test=False).ip_allowlist_ids.ids, allowlist.ids)
+        self.assertTrue(self.route.allow_all)
+        self.assertFalse(self.route.is_ip_allowed('203.0.113.10'))
+
+    def test_route_ignores_allow_all_with_attached_allowlists(self):
+        allowlist = self._create_allowlist()
+        self.route.ip_allowlist_ids = [(6, 0, allowlist.ids)]
+        self.route.allow_all = True
+
+        self.assertTrue(self.route.allow_all)
+        self.assertTrue(self.route.is_ip_allowed('203.0.113.10'))
+        self.assertFalse(self.route.is_ip_allowed('198.51.100.10'))
+
+    def test_route_ignores_allow_all_with_inactive_attached_allowlists(self):
+        allowlist = self._create_allowlist(active=False)
+        self.route.ip_allowlist_ids = [(6, 0, allowlist.ids)]
+        self.route.allow_all = True
+
+        self.assertTrue(self.route.allow_all)
+        self.assertFalse(self.route.is_ip_allowed('203.0.113.10'))
+
+    def test_route_can_enable_allow_all_after_clearing_allowlists(self):
+        allowlist = self._create_allowlist()
+        self.route.ip_allowlist_ids = [(6, 0, allowlist.ids)]
+
+        self.route.write({
+            'ip_allowlist_ids': [(5, 0, 0)],
+            'allow_all': True,
+        })
+
+        self.assertTrue(self.route.allow_all)
+        self.assertTrue(self.route.is_ip_allowed('203.0.113.10'))
 
     def test_request_ip_uses_x_forwarded_for_in_proxy_mode(self):
         class HttpRequest:
