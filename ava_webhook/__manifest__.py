@@ -3,7 +3,7 @@
     'name': 'Avalah Webhook',
     'version': '1.4.1',
     'author': 'Avatud Lahendused',
-    'license': 'Other proprietary',
+    'license': 'MIT',
     'website': 'https://www.avalah.ee',
     'depends': [
         'base',
