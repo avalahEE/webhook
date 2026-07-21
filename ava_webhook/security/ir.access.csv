@@ -1,0 +1,6 @@
+id,name,model_id,group_id/id,operation,domain
+ava_webhook.access_ava_webhook_route,access_ava_webhook_route,ava.webhook.route,ava_webhook.group_webhook_admin,crud,
+ava_webhook.access_ava_webhook_ip_allowlist,access_ava_webhook_ip_allowlist,ava.webhook.ip.allowlist,ava_webhook.group_webhook_admin,crud,
+ava_webhook.access_ava_webhook_ip_allowlist_line,access_ava_webhook_ip_allowlist_line,ava.webhook.ip.allowlist.line,ava_webhook.group_webhook_admin,crud,
+ava_webhook.access_ava_webhook_key,access_ava_webhook_key,ava.webhook.key,ava_webhook.group_webhook_admin,crud,
+ava_webhook.access_ava_webhook_payload,access_ava_webhook_payload,ava.webhook.payload,ava_webhook.group_webhook_admin,crud,
