@@ -11,7 +11,7 @@
     ],
     'data': [
         'security/security.xml',
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
 
         'views/ava_webhook_route.xml',
         'views/ava_webhook_ip_allowlist.xml',
@@ -25,6 +25,17 @@
     'installable': True,
 
     'override': {
+        '19.0': {
+            'installable': True,
+            'data': [
+                'security/security.xml',
+                'security/ir.model.access.csv',
+
+                'views/ava_webhook_route.xml',
+                'views/ava_webhook_ip_allowlist.xml',
+                'views/ava_webhook_payload.xml',
+            ],
+        },
         '18.0': {
             'installable': True,
             'data': [
