@@ -200,6 +200,13 @@ class AvaWebhookRoute(models.Model):
                 raise ValidationError(_('Method "%s" is not allowed on model "%s"', record.method_process, record.model))
 
     def execute(self, data, headers):
+        """
+        Run the route and return the (body, status_code) tuple to reply with.
+
+        A handler shapes the reply by implementing `webhook_response`; without one
+        the reply is ({'ok': True}, 200). The stored record is not returned: nothing
+        outside this model needs it, and the reply is what the endpoint is after.
+        """
         self.ensure_one()
         _logger.info(f'webhook triggered: {self.route}')
         if not self.model:
@@ -207,20 +214,31 @@ class AvaWebhookRoute(models.Model):
         if self.model not in self.env:
             raise UserError(_('Route "%s": model "%s" not found', self.route, self.model))
 
-        transformed_data = self._execute_transform(data, headers)
+        model = self._get_model()
+
+        transformed_data = self._execute_transform(model, data, headers)
         if transformed_data is None:
             _logger.info(f'webhook {self.route} discarded input data')
+            return self._default_response()
+
+        record = model.store(transformed_data, headers, self.id) if self.store else None
+        self._execute_process(model, transformed_data, headers, record)
+
+        response = self._execute_response(model, transformed_data, headers, record)
+        return response if response is not None else self._default_response()
+
+    @staticmethod
+    def _default_response():
+        """Built per call: a shared dict would be mutable across requests."""
+        return dict(ok=True), 200
+
+    def _execute_response(self, model, data, headers, record):
+        method = getattr(model, 'webhook_response', None)
+        if not method:
             return None
+        return method(data, headers, record, self.id)
 
-        record = None
-        if self.store:
-            model = self._get_model()
-            record = model.store(transformed_data, headers, self.id)
-        self._execute_process(transformed_data, headers, record)
-        return record
-
-    def _execute_transform(self, data, headers):
-        model = self._get_model()
+    def _execute_transform(self, model, data, headers):
         if self.method_transform in self.get_allowed_methods(self.model):
             method_transform = getattr(model, self.method_transform)
             return method_transform(data, headers, self.id)
@@ -257,9 +275,8 @@ class AvaWebhookRoute(models.Model):
                 _logger.exception(e)
             raise UserError(_('Route "%s": transform expression caused an internal error', self.route))
 
-    def _execute_process(self, data, headers, record):
+    def _execute_process(self, model, data, headers, record):
         assert self.model
-        model = self._get_model()
         if self.method_process in self.get_allowed_methods(self.model):
             method_process = getattr(model, self.method_process)
             return method_process(data, headers, record, self.id)
