@@ -1,36 +1,33 @@
 # noinspection PyStatementEffect
 {
     'name': 'Avalah Webhook',
-    'version': '1.4.1',
+    'version': '2.0.0',
     'author': 'Avatud Lahendused',
-    'license': 'MIT',
+    'license': 'Other OSI approved licence',
     'website': 'https://www.avalah.ee',
     'depends': [
         'base',
         'mail',
     ],
     'data': [
-        'security/security.xml',
-        'security/ir.access.csv',
-
-        'views/ava_webhook_route.xml',
-        'views/ava_webhook_ip_allowlist.xml',
-        'views/ava_webhook_payload.xml',
+        'security/security_18.xml',
+        'security/ir.model.access.csv',
+        'views/ava_webhook_route_16.xml',
+        'views/ava_webhook_ip_allowlist_16.xml',
+        'views/ava_webhook_payload_16.xml',
     ],
     'assets': {
         'web.assets_backend': [
-            'ava_webhook/static/src/js/*.js',
+            'ava_webhook/static/src/js/16/*.js',
         ],
     },
     'installable': True,
-
     'override': {
         '19.0': {
             'installable': True,
             'data': [
                 'security/security.xml',
                 'security/ir.model.access.csv',
-
                 'views/ava_webhook_route.xml',
                 'views/ava_webhook_ip_allowlist.xml',
                 'views/ava_webhook_payload.xml',
@@ -41,7 +38,6 @@
             'data': [
                 'security/security_18.xml',
                 'security/ir.model.access.csv',
-
                 'views/ava_webhook_route.xml',
                 'views/ava_webhook_ip_allowlist.xml',
                 'views/ava_webhook_payload.xml',
@@ -60,10 +56,23 @@
                 'web.assets_backend': [
                     'ava_webhook/static/src/js/*.js',
                 ],
-            }
+            },
         },
         '16.0': {
-            'installable': False,
+            'installable': True,
+            'license': 'Other OSI approved licence',  # MIT not supported on 16.0
+            'data': [
+                'security/security_18.xml',
+                'security/ir.model.access.csv',
+                'views/ava_webhook_route_16.xml',
+                'views/ava_webhook_ip_allowlist_16.xml',
+                'views/ava_webhook_payload_16.xml',
+            ],
+            'assets': {
+                'web.assets_backend': [
+                    'ava_webhook/static/src/js/16/*.js',
+                ],
+            },
         },
     },
 }
