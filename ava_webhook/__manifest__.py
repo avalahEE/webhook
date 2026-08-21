@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Avalah Webhook',
-    'version': '1.4.1',
+    'version': '2.0.0',
     'author': 'Avatud Lahendused',
     'license': 'MIT',
     'website': 'https://www.avalah.ee',
@@ -63,7 +63,20 @@
             }
         },
         '16.0': {
-            'installable': False,
+            'installable': True,
+            'license': 'Other OSI approved licence', # MIT not supported on 16.0
+            'data': [
+                'security/security_18.xml',
+                'security/ir.model.access.csv',
+                'views/ava_webhook_route_16.xml',
+                'views/ava_webhook_ip_allowlist_16.xml',
+                'views/ava_webhook_payload_16.xml',
+            ],
+            'assets': {
+                'web.assets_backend': [
+                    'ava_webhook/static/src/js/16/*.js',
+                ],
+            },
         },
     },
 }
