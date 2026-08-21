@@ -1,7 +1,4 @@
 from odoo import models, api
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 class AvaWebhookMixin(models.AbstractModel):
@@ -30,3 +27,20 @@ class AvaWebhookMixin(models.AbstractModel):
         (e.g. send a notification).
         """
         pass
+
+    @api.model
+    def webhook_response(self, data, headers, record, route_id):
+        """
+        This lets the handler dictate the reply. Return a (body, status_code)
+        tuple, or None for the default ({'ok': True}, 200). It is not called when
+        `transform` discarded the event, which always replies with the default.
+
+        `data` is what `transform` returned, not the request body. A handler that
+        needs to shape the reply from its own work therefore returns that work from
+        `transform` and reads it back here.
+
+        A status outside 200..599 is refused and becomes a 500 with the request
+        rolled back. A non-2xx returned here without raising keeps the handler's
+        records, unlike every other way of producing an error reply.
+        """
+        return None

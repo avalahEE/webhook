@@ -1,11 +1,12 @@
+from odoo import exceptions
 from odoo.tests import common
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import config
 from ..controllers.webhook import AvaWebhookController
+from ..lib.exceptions import CONCURRENCY_EXCEPTIONS, WebhookError
+from unittest.mock import patch
+import psycopg2.errors
 import textwrap
-import logging
-
-_logger = logging.getLogger(__name__)
 
 
 class TestAvaWebhookRoute(common.TransactionCase):
@@ -54,7 +55,7 @@ class TestAvaWebhookRoute(common.TransactionCase):
         })
 
         test_headers = {'X-Test': 'test'}
-        result = route._execute_transform({'test': 'data'}, test_headers)
+        result = route._execute_transform(route._get_model(), {'test': 'data'}, test_headers)
         self.assertIsNone(result)
 
     def test_transform_emit(self):
@@ -70,7 +71,7 @@ class TestAvaWebhookRoute(common.TransactionCase):
             """),
         })
 
-        result = route._execute_transform(test_data, test_headers)
+        result = route._execute_transform(route._get_model(), test_data, test_headers)
         self.assertEqual(result, test_data)
 
     def test_execute_uses_recordset_user(self):
@@ -91,10 +92,10 @@ class TestAvaWebhookRoute(common.TransactionCase):
             """),
         })
 
-        record = route.sudo().execute({'test': 'data'}, {'X-Test': 'test'})
+        body, status_code = route.sudo().execute({'test': 'data'}, {'X-Test': 'test'})
 
-        self.assertFalse(record)
-        self.assertEqual(route.sudo()._execute_transform({}, {}), {'uid': user.id})
+        self.assertEqual((body, status_code), ({'ok': True}, 200))
+        self.assertEqual(route.sudo()._execute_transform(route.sudo()._get_model(), {}, {}), {'uid': user.id})
 
     def test_route_allow_all_allows_any_ip(self):
         self.assertTrue(self.route.allow_all)
@@ -200,8 +201,8 @@ class TestAvaWebhookRoute(common.TransactionCase):
 
         test_headers = {'X-Test': 'test'}
         with self.assertRaises(UserError):
-            route.with_context(ava_suppress_error_log=True)._execute_transform({'test': 'data'}, test_headers)
-
+            route.with_context(ava_suppress_error_log=True)._execute_transform(
+                route._get_model(), {'test': 'data'}, test_headers)
 
     def test_process_method(self):
         """Test that process can use method"""
@@ -214,7 +215,7 @@ class TestAvaWebhookRoute(common.TransactionCase):
         test_data = {'test': 'data'}
         test_headers = {'X-Test': 'test'}
         test_record = self.env['ava.webhook.payload'].create({'data': test_data})
-        route._execute_process(test_data, test_headers, test_record)
+        route._execute_process(route._get_model(), test_data, test_headers, test_record)
 
     def test_process_expression(self):
         """Test that process expression works"""
@@ -230,7 +231,7 @@ class TestAvaWebhookRoute(common.TransactionCase):
         test_data = {'test': 'data'}
         test_headers = {'X-Test': 'test'}
         test_record = self.env['ava.webhook.payload'].create({'data': test_data})
-        route._execute_process(test_data, test_headers, test_record)
+        route._execute_process(route._get_model(), test_data, test_headers, test_record)
 
     def test_process_error(self):
         """Test that process errors are handled properly"""
@@ -247,4 +248,87 @@ class TestAvaWebhookRoute(common.TransactionCase):
         test_headers = {'X-Test': 'test'}
         test_record = self.env['ava.webhook.payload'].create({'data': test_data})
         with self.assertRaises(UserError):
-            route.with_context(ava_suppress_error_log=True)._execute_process(test_data, test_headers, test_record)
+            route.with_context(ava_suppress_error_log=True)._execute_process(
+                route._get_model(), test_data, test_headers, test_record)
+
+    def test_execute_defaults(self):
+        body, status_code = self.route.execute({'test': 'data'}, {})
+
+        self.assertEqual(body, {'ok': True})
+        self.assertEqual(status_code, 200)
+
+    def test_execute_uses_webhook_response(self):
+        payload_model = type(self.env['ava.webhook.payload'])
+
+        def webhook_response(self, data, headers, record, route_id):
+            return {'quotationId': 42, 'echo': data}, 201
+
+        with patch.object(payload_model, 'webhook_response', webhook_response):
+            body, status_code = self.route.execute({'test': 'data'}, {})
+
+        self.assertEqual(body, {'quotationId': 42, 'echo': {'test': 'data'}})
+        self.assertEqual(status_code, 201)
+
+    def test_execute_propagates_webhook_error(self):
+        payload_model = type(self.env['ava.webhook.payload'])
+
+        def store(self, data, headers, route_id):
+            raise WebhookError('Company is not tagged Klient', status_code=422)
+
+        with patch.object(payload_model, 'store', store):
+            with self.assertRaises(WebhookError) as err:
+                self.route.execute({'test': 'data'}, {})
+
+        self.assertEqual(err.exception.status_code, 422)
+
+    def test_execute_on_discarded_input(self):
+        route = self.env['ava.webhook.route'].create({
+            'route': 'test-discard-http',
+            'model': 'ava.webhook.payload',
+            'method_transform': False,
+            'transform': textwrap.dedent("""
+                discard()
+            """),
+        })
+
+        body, status_code = route.execute({'test': 'data'}, {})
+
+        self.assertEqual(body, {'ok': True})
+        self.assertEqual(status_code, 200)
+
+    def test_concurrency_tuple_covers_what_odoo_retries(self):
+        """Odoo added odoo.exceptions.ConcurrencyError as a fourth retryable in 19.0.
+        Missing a member means a handler that asks to be retried gets a 500 instead."""
+        self.assertIn(psycopg2.errors.SerializationFailure, CONCURRENCY_EXCEPTIONS)
+        self.assertIn(psycopg2.errors.DeadlockDetected, CONCURRENCY_EXCEPTIONS)
+        self.assertIn(psycopg2.errors.LockNotAvailable, CONCURRENCY_EXCEPTIONS)
+
+        odoo_error = getattr(exceptions, 'ConcurrencyError', None)
+        if odoo_error is not None:
+            self.assertIn(odoo_error, CONCURRENCY_EXCEPTIONS,
+                          'this Odoo version retries ConcurrencyError, so it must be listed')
+
+    def test_execute_resolves_the_model_once(self):
+        """Transform, store, process and the reply must run on one model, resolved
+        once. Odoo interns Environments so re-deriving it was not a correctness
+        problem, but the single resolution is what makes that guarantee readable."""
+        route_model = type(self.env['ava.webhook.route'])
+        original = route_model._get_model
+        calls = []
+
+        def counting(self):
+            calls.append(1)
+            return original(self)
+
+        with patch.object(route_model, '_get_model', counting):
+            self.route.execute({'test': 'data'}, {})
+
+        self.assertEqual(len(calls), 1)
+
+    def test_execute_builds_a_fresh_default_body(self):
+        """The default body must not be a constant shared between requests."""
+        first, dummy = self.route.execute({'test': 'data'}, {})
+        second, dummy = self.route.execute({'test': 'data'}, {})
+
+        self.assertEqual(first, second)
+        self.assertIsNot(first, second)
