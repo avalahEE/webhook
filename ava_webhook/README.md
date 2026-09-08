@@ -61,6 +61,8 @@ Things to consider:
 Changelog
 ---------
 
+- 2.0.1
+  - License type "MIT" not supported
 - 2.0.0
   - Add support for 16.0
   - `POST /webhook/<route>/<key>` now replies with real HTTP status codes instead of wrapping every error in a `200` JSON-RPC envelope

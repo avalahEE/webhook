@@ -1,9 +1,9 @@
 # noinspection PyStatementEffect
 {
     'name': 'Avalah Webhook',
-    'version': '2.0.0',
+    'version': '2.0.1',
     'author': 'Avatud Lahendused',
-    'license': 'MIT',
+    'license': 'Other OSI approved license',
     'website': 'https://www.avalah.ee',
     'depends': [
         'base',
@@ -64,7 +64,6 @@
         },
         '16.0': {
             'installable': True,
-            'license': 'Other OSI approved licence', # MIT not supported on 16.0
             'data': [
                 'security/security_18.xml',
                 'security/ir.model.access.csv',
