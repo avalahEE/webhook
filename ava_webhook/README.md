@@ -61,7 +61,7 @@ Things to consider:
 Changelog
 ---------
 
-- 2.0.1
+- 2.0.2
   - License type "MIT" not supported
 - 2.0.0
   - Add support for 16.0
