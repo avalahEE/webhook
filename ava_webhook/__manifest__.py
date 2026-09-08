@@ -1,9 +1,9 @@
 # noinspection PyStatementEffect
 {
     'name': 'Avalah Webhook',
-    'version': '2.0.1',
+    'version': '2.0.2',
     'author': 'Avatud Lahendused',
-    'license': 'Other OSI approved license',
+    'license': 'Other OSI approved licence',
     'website': 'https://www.avalah.ee',
     'depends': [
         'base',
