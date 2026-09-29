@@ -14,9 +14,10 @@ venv
 /avadev_*
 /0dev_*
 
-.env
+.env*
 
 /*.sql
+/*.json
 *.gz
 *.zip
 *.patch
@@ -29,6 +30,10 @@ venv
 *.pyc
 .~lock*
 
+.adev
 .idea
 .vscode
+.claude
+.junie
+.opencode
 *.code-workspace

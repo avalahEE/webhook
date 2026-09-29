@@ -13,4 +13,7 @@ class AvaWebhookKey(models.Model):
         return ''.join(secrets.choice(chars) for _ in range(64))
 
     key = fields.Char(string='Key', required=True, default=_generate_key)
-    route_id = fields.Many2one('ava.webhook.route', string='Route', required=True)
+    route_id = fields.Many2one('ava.webhook.route',
+                               string='Route',
+                               required=True,
+                               ondelete='cascade')
