@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Avalah Webhook',
-    'version': '2.0.2',
+    'version': '2.0.3',
     'author': 'Avatud Lahendused',
     'license': 'Other OSI approved licence',
     'website': 'https://www.avalah.ee',
@@ -35,6 +35,11 @@
                 'views/ava_webhook_ip_allowlist.xml',
                 'views/ava_webhook_payload.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'ava_webhook/static/src/js/17-19/*.js',
+                ],
+            }
         },
         '18.0': {
             'installable': True,
@@ -46,6 +51,11 @@
                 'views/ava_webhook_ip_allowlist.xml',
                 'views/ava_webhook_payload.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'ava_webhook/static/src/js/17-19/*.js',
+                ],
+            }
         },
         '17.0': {
             'installable': True,
@@ -58,7 +68,7 @@
             ],
             'assets': {
                 'web.assets_backend': [
-                    'ava_webhook/static/src/js/*.js',
+                    'ava_webhook/static/src/js/17-19/*.js',
                 ],
             }
         },
