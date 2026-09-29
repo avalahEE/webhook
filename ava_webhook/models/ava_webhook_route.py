@@ -307,6 +307,8 @@ class AvaWebhookRoute(models.Model):
         return model.with_user(self.execution_user_id) if self.execution_user_id else model
 
     def _compute_url_preview(self):
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url') or ''
+        icp = self.env['ir.config_parameter'].sudo()
+        get_str = icp.get_param if version_info[:2] < (20, 0) else icp.get_str
+        base_url = get_str('web.base.url') or ''
         for record in self:
             record.url_preview = f'{base_url}{AvaWebhookController._endpoint}/{record.route}/<key>'
