@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Avalah Webhook',
-    'version': '2.0.2',
+    'version': '2.0.3',
     'author': 'Avatud Lahendused',
     'license': 'Other OSI approved licence',
     'website': 'https://www.avalah.ee',
@@ -12,7 +12,6 @@
     'data': [
         'security/security.xml',
         'security/ir.access.csv',
-
         'views/ava_webhook_route.xml',
         'views/ava_webhook_ip_allowlist.xml',
         'views/ava_webhook_payload.xml',
@@ -23,29 +22,36 @@
         ],
     },
     'installable': True,
-
     'override': {
         '19.0': {
             'installable': True,
             'data': [
                 'security/security.xml',
                 'security/ir.model.access.csv',
-
                 'views/ava_webhook_route.xml',
                 'views/ava_webhook_ip_allowlist.xml',
                 'views/ava_webhook_payload.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'ava_webhook/static/src/js/17-19/*.js',
+                ],
+            },
         },
         '18.0': {
             'installable': True,
             'data': [
                 'security/security_18.xml',
                 'security/ir.model.access.csv',
-
                 'views/ava_webhook_route.xml',
                 'views/ava_webhook_ip_allowlist.xml',
                 'views/ava_webhook_payload.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'ava_webhook/static/src/js/17-19/*.js',
+                ],
+            },
         },
         '17.0': {
             'installable': True,
@@ -58,9 +64,9 @@
             ],
             'assets': {
                 'web.assets_backend': [
-                    'ava_webhook/static/src/js/*.js',
+                    'ava_webhook/static/src/js/17-19/*.js',
                 ],
-            }
+            },
         },
         '16.0': {
             'installable': True,

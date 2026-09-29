@@ -61,6 +61,10 @@ Things to consider:
 Changelog
 ---------
 
+- 2.0.3
+  - Fix method not found, `ava.webhook.route` url preview was not working because of odoo v20 `ir.config.parameter` differences
+  - Fix dynamic selection widget not working due to useState, Owl 3 now uses proxy instead of useState
+  - Fix `ava.webhook.route` not being unlinked when there are Keys related to the Route
 - 2.0.2
   - License type "MIT" not supported
 - 2.0.0
